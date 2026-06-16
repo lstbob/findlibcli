@@ -25,7 +25,7 @@ func NewLLM(cfg LLMConfig) *LLMResolver {
 	if model == "" {
 		switch cfg.Provider {
 		case "gemini":
-			model = "gemini-2.0-flash"
+			model = "gemini-2.5-flash"
 		case "openai":
 			model = "gpt-4o-mini"
 		case "anthropic":
@@ -33,7 +33,7 @@ func NewLLM(cfg LLMConfig) *LLMResolver {
 		case "groq":
 			model = "llama-3.3-70b-versatile"
 		default:
-			model = "gemini-2.0-flash"
+			model = "gemini-2.5-flash"
 		}
 	}
 	return &LLMResolver{cfg: LLMConfig{

@@ -149,6 +149,13 @@ func resolve(cfg *config.Config, language, description string) ([]resolver.Resul
 		if err == nil && len(results) > 0 {
 			return results, "LLM (" + cfg.LLMProvider + ")", nil
 		}
+		if verboseFlag {
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "[findlib] LLM resolver failed: %v (falling back to offline)\n", err)
+			} else {
+				fmt.Fprintf(os.Stderr, "[findlib] LLM returned no results (falling back to offline)\n")
+			}
+		}
 	}
 
 	r := resolver.NewOffline()
