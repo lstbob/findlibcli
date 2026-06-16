@@ -13,17 +13,19 @@ findlib rust "async runtime"
 ## Installation
 
 ```bash
-go install github.com/lstbob/findlibcli/cmd/findlib@latest
+go install github.com/lstbob/findlibcli/cmd/findlib@main
 ```
 
-This installs the `findlib` binary to `~/go/bin/`. Make sure that's in your PATH:
+If the proxy cache hasn't updated yet, `@main` pulls directly from the branch. Once the tag propagates, `@latest` will also work.
+
+The binary installs to `~/go/bin/findlib`. Make sure `~/go/bin` is at the **front** of your PATH:
 
 ```bash
-export PATH=$PATH:~/go/bin
-# Add to ~/.bashrc or ~/.zshrc to persist
+export PATH=$HOME/go/bin:$PATH
+echo 'export PATH=$HOME/go/bin:$PATH' >> ~/.bashrc
 ```
 
-Or build manually and move to `/usr/local/bin`:
+Or build from source:
 
 ```bash
 git clone https://github.com/lstbob/findlibcli.git
@@ -60,6 +62,8 @@ findlib config openai "sk-..."
 ## Usage
 
 ```bash
+findlib <language> "<description>"
+# or
 findlib search <language> "<description>"
 ```
 
@@ -67,8 +71,8 @@ findlib search <language> "<description>"
 
 | Flag | Description |
 |---|---|
-| `--json` | Output as JSON |
-| `--import-only` | Print only the import path |
+| `--json` | Output as JSON (uses first result, no picker) |
+| `--import-only` | Print only the import path/name |
 | `--no-copy` | Skip clipboard copy |
 
 ### nvim integration
@@ -86,9 +90,29 @@ nnoremap <leader>fl :!findlib
 
 ## How it works
 
-1. **Resolve** — sends your description + language to Gemini (free) to suggest matching libraries
-2. **Fetch docs** — looks up usage snippets from Context7
-3. **Pick** — if multiple matches, shows an interactive picker
+1. **Resolve** — sends description + language to Gemini (free) to suggest matching libraries
+2. **Fetch docs** — looks up usage snippets from Context7 (if API key configured)
+3. **Pick** — if multiple matches, shows an interactive picker (TTY) or numbered list (pipe)
 4. **Show** — displays usage docs + copies the import path to clipboard
 
-If no API keys are configured, falls back to searching package registries directly (npm, crates.io, NuGet).
+If no API keys are configured, falls back to searching package registries directly.
+
+### Supported registries (offline mode)
+
+| Language | Registry |
+|---|---|
+| JavaScript / TypeScript | npm |
+| Python | npm (fallback, no PyPI API) |
+| Go | npm (fallback) |
+| Rust | crates.io |
+| C# / .NET | NuGet |
+
+## Config
+
+Configuration is stored at `~/.config/findlib/config.json`. View or set values:
+
+```bash
+findlib config              # view all
+findlib config gemini "key" # set Gemini API key
+findlib config llm groq     # switch provider
+```
