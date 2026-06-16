@@ -116,7 +116,7 @@ func (r *OfflineResolver) searchNuGet(desc string) ([]Result, error) {
 func (r *OfflineResolver) searchCargo(desc string) ([]Result, error) {
 	u := fmt.Sprintf("https://crates.io/api/v1/crates?q=%s&per_page=10", url.QueryEscape(desc))
 	req, _ := http.NewRequest("GET", u, nil)
-	req.Header.Set("User-Agent", "findlibcli/0.1")
+	req.Header.Set("User-Agent", "findlib/0.1")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("cargo search: %w", err)

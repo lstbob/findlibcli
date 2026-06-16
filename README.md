@@ -13,15 +13,22 @@ findlib rust "async runtime"
 ## Installation
 
 ```bash
-go install github.com/lstbob/findlibcli@latest
+go install github.com/lstbob/findlibcli/cmd/findlib@latest
 ```
 
-Or build from source:
+This installs the `findlib` binary to `~/go/bin/`. Make sure that's in your PATH:
+
+```bash
+export PATH=$PATH:~/go/bin
+# Add to ~/.bashrc or ~/.zshrc to persist
+```
+
+Or build manually and move to `/usr/local/bin`:
 
 ```bash
 git clone https://github.com/lstbob/findlibcli.git
 cd findlibcli
-go build -o findlib .
+go build -o findlib ./cmd/findlib
 sudo mv findlib /usr/local/bin/
 ```
 
