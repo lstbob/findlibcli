@@ -17,6 +17,7 @@ var (
 	jsonFlag     bool
 	importFlag   bool
 	noCopyFlag   bool
+	verboseFlag  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -51,10 +52,19 @@ func run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	results, err := resolve(cfg, language, description)
+	results, source, err := resolve(cfg, language, description)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
+	}
+
+	if verboseFlag {
+		fmt.Fprintf(os.Stderr, "[findlib] search source: %s (%d results)\n", source, len(results))
+		docSource := "none (no Context7 key)"
+		if cfg.Context7APIKey != "" {
+			docSource = "Context7"
+		}
+		fmt.Fprintf(os.Stderr, "[findlib] docs source: %s\n", docSource)
 	}
 
 	if len(results) == 0 {
@@ -113,12 +123,14 @@ func init() {
 	rootCmd.Flags().BoolVar(&jsonFlag, "json", false, "Output as JSON")
 	rootCmd.Flags().BoolVar(&importFlag, "import-only", false, "Print only the import path")
 	rootCmd.Flags().BoolVar(&noCopyFlag, "no-copy", false, "Skip clipboard copy")
+	rootCmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show which resolver and doc source are used")
 	searchCmd.Flags().BoolVar(&jsonFlag, "json", false, "Output as JSON")
 	searchCmd.Flags().BoolVar(&importFlag, "import-only", false, "Print only the import path")
 	searchCmd.Flags().BoolVar(&noCopyFlag, "no-copy", false, "Skip clipboard copy")
+	searchCmd.Flags().BoolVarP(&verboseFlag, "verbose", "v", false, "Show which resolver and doc source are used")
 }
 
-func resolve(cfg *config.Config, language, description string) ([]resolver.Result, error) {
+func resolve(cfg *config.Config, language, description string) ([]resolver.Result, string, error) {
 	var llmCfg resolver.LLMConfig
 
 	switch cfg.LLMProvider {
@@ -135,14 +147,14 @@ func resolve(cfg *config.Config, language, description string) ([]resolver.Resul
 		r := resolver.NewLLM(llmCfg)
 		results, err := r.Resolve(language, description)
 		if err == nil && len(results) > 0 {
-			return results, nil
+			return results, "LLM (" + cfg.LLMProvider + ")", nil
 		}
 	}
 
 	r := resolver.NewOffline()
 	results, err := r.Resolve(language, description)
 	if err != nil {
-		return nil, fmt.Errorf("offline resolve: %w", err)
+		return nil, "", fmt.Errorf("offline resolve: %w", err)
 	}
-	return results, nil
+	return results, "offline (npm/crates.io/NuGet)", nil
 }
